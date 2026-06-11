@@ -181,6 +181,24 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
       }
     ];
 
+    // Adjuntar la camiseta seleccionada como segunda imagen de referencia
+    // para que el modelo reproduzca exactamente ese diseño
+    const { shirtFile } = req.body;
+    if (shirtFile) {
+      const shirtPath = path.join(__dirname, 'public', 'Camisas', path.basename(shirtFile));
+      if (fs.existsSync(shirtPath)) {
+        parts.push({
+          inlineData: {
+            mimeType: 'image/png',
+            data: fs.readFileSync(shirtPath).toString('base64')
+          }
+        });
+        console.log('Camiseta de referencia adjuntada:', path.basename(shirtFile));
+      } else {
+        console.warn('No se encontró la camiseta de referencia:', shirtFile);
+      }
+    }
+
     console.log('Generando carta de jugador de fútbol con Gemini 2.5...');
     
     // Generar la imagen

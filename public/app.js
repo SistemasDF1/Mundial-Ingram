@@ -153,15 +153,15 @@ async function generateImage() {
     const nombreCamiseta = camiseta ? camiseta.name : 'la seleccionada';
     const estiloMarco = window.marcoSeleccionado || 'verde y dorado';
     
-    const prompt = `Usa la foto que acabo de tomar como base principal.
+    const prompt = `Usa la primera imagen (la foto de la persona) como base principal.
 Mantén mi identidad facial realista y reconocible.
 
-Cambia la ropa por la camiseta de fútbol de ${nombreCamiseta}.
-Pon la camiseta de ${nombreCamiseta} con sus colores característicos,
-diseño auténtico y escudo del país.
-IMPORTANTE: la camiseta NO debe tener logos de patrocinadores,
-ni marcas deportivas (Nike, Adidas, Puma, etc.), ni publicidad de ninguna marca comercial.
-Solo los colores del país y su escudo, sin ningún logo comercial.
+La segunda imagen es la camiseta de fútbol de ${nombreCamiseta} que DEBES usar.
+Cambia la ropa de la persona por EXACTAMENTE esa camiseta de la segunda imagen:
+reproduce fielmente sus colores, diseño, franjas, escudo y todos sus detalles.
+NO inventes otra camiseta ni cambies su diseño.
+IMPORTANTE: no agregues logos de patrocinadores, marcas deportivas
+ni publicidad que no aparezcan en la camiseta de referencia.
 
 Crea una carta de jugador de fútbol estilo FIFA Ultimate Team,
 diseño premium y profesional.
@@ -187,6 +187,10 @@ no caricatura, no anime.`;
         const file = dataURLtoFile(imagePreview.src, 'captured.png');
         formData.append('image', file);
         formData.append('prompt', prompt);
+        // Enviar el archivo de la camiseta seleccionada para usarla como referencia visual
+        if (camiseta && camiseta.file) {
+            formData.append('shirtFile', camiseta.file);
+        }
 
         const response = await fetch('/api/generate', {
             method: 'POST',
