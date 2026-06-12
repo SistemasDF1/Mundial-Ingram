@@ -261,6 +261,38 @@
         }
         .logo-corner .logo-dark { display: none; }
         .logo-corner .logo-light { display: inline-block; }
+        /* Botón flotante de galería */
+        .gallery-fab {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 1001;
+            background: #e55319;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px 18px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(229,83,25,0.4);
+            transition: all .25s ease;
+        }
+        @media (max-width: 768px) {
+            .gallery-fab {
+                top: auto;
+                bottom: 22px;
+                right: 18px;
+                width: 52px;
+                height: 52px;
+                padding: 0;
+                justify-content: center;
+                font-size: 1.4rem;
+            }
+            .gallery-fab-label { display: none; }
+        }
         @media (prefers-color-scheme: dark) {
             .logo-corner .logo-dark { display: inline-block; }
             .logo-corner .logo-light { display: none; }
@@ -830,7 +862,7 @@
         <img class="logo-dark" src="Ingram-white.png" alt="Ingram">
     </div>
 
-    <a href="/gallery.html" title="Ver galería de imágenes" style="position:fixed;top:18px;right:18px;z-index:50;background:#e55319;color:#fff;text-decoration:none;font-weight:600;font-size:0.9rem;padding:10px 18px;border-radius:50px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(229,83,25,0.4);transition:all .25s ease;" onmouseover="this.style.background='#194875'" onmouseout="this.style.background='#e55319'">🖼️ Galería</a>
+    <a href="/gallery.html" class="gallery-fab" title="Ver galería de imágenes" onmouseover="this.style.background='#194875'" onmouseout="this.style.background='#e55319'">🖼️<span class="gallery-fab-label">Galería</span></a>
 
 
     <div class="container" id="inicioContainer" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:100vh;padding-top:25vh; transition: opacity 0.3s;">
