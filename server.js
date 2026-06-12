@@ -329,8 +329,33 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
   }
 });
 
+// Credenciales para acceder a la galería
+const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'Mundial2026';
+
+// Valida el header Authorization: Basic <base64(user:pass)>
+function checkGalleryAuth(req) {
+  const header = req.headers.authorization || '';
+  if (!header.startsWith('Basic ')) return false;
+  let decoded;
+  try {
+    decoded = Buffer.from(header.slice(6), 'base64').toString('utf8');
+  } catch {
+    return false;
+  }
+  const idx = decoded.indexOf(':');
+  if (idx === -1) return false;
+  const user = decoded.slice(0, idx);
+  const pass = decoded.slice(idx + 1);
+  return user === ADMIN_USER && pass === ADMIN_PASS;
+}
+
 // Endpoint para listar las imágenes de la galería (más recientes primero)
 app.get('/api/gallery', async (req, res) => {
+  // Requiere login (usuario y contraseña)
+  if (!checkGalleryAuth(req)) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
   try {
     // Si GitHub está configurado, las imágenes permanentes viven ahí
     const ghImages = await listGitHubImages();

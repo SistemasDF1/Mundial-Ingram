@@ -200,22 +200,104 @@
         .lightbox .close:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+
+        /* Login */
+        #login {
+            position: fixed;
+            inset: 0;
+            background: #194875;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 36px 30px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-card h2 {
+            color: #194875;
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        .login-card p {
+            color: #6b7a8d;
+            font-size: 0.9rem;
+            margin-bottom: 22px;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 13px 16px;
+            margin-bottom: 14px;
+            border: 1px solid #d6dde6;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #194875;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .login-card input:focus {
+            border-color: #e55319;
+        }
+        .login-card button {
+            width: 100%;
+            background: #e55319;
+            color: #fff;
+            border: none;
+            padding: 13px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .login-card button:hover {
+            background: #194875;
+        }
+        .login-error {
+            color: #d33;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            min-height: 18px;
+        }
+        #app { display: none; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>Galería de Imágenes</h1>
-            <p id="count">Cargando imágenes...</p>
-        </div>
-        <div class="actions">
-            <button class="btn secondary" onclick="loadGallery()">↻ Actualizar</button>
-            <a class="btn" href="/">＋ Generar nueva</a>
-        </div>
+    <!-- Pantalla de login -->
+    <div id="login">
+        <form class="login-card" onsubmit="doLogin(event)">
+            <h2>Galería de Imágenes</h2>
+            <p>Ingresa tus credenciales para acceder</p>
+            <div class="login-error" id="login-error"></div>
+            <input type="text" id="user" placeholder="Usuario" autocomplete="username" required>
+            <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password" required>
+            <button type="submit">Entrar</button>
+        </form>
     </div>
 
-    <div id="content">
-        <p class="loading">Cargando imágenes...</p>
+    <!-- Galería (oculta hasta iniciar sesión) -->
+    <div id="app">
+        <div class="header">
+            <div>
+                <h1>Galería de Imágenes</h1>
+                <p id="count">Cargando imágenes...</p>
+            </div>
+            <div class="actions">
+                <button class="btn secondary" onclick="loadGallery()">↻ Actualizar</button>
+                <a class="btn" href="/">＋ Generar nueva</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <p class="loading">Cargando imágenes...</p>
+        </div>
     </div>
 
     <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
@@ -235,13 +317,58 @@
             });
         }
 
+        const AUTH_KEY = 'galleryAuth';
+
+        function showLogin(msg) {
+            document.getElementById('login').style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('login-error').textContent = msg || '';
+        }
+
+        function showApp() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+        }
+
+        async function doLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('user').value.trim();
+            const pass = document.getElementById('pass').value;
+            const token = btoa(user + ':' + pass);
+
+            const res = await fetch('/api/gallery', {
+                headers: { 'Authorization': 'Basic ' + token }
+            });
+
+            if (res.ok) {
+                sessionStorage.setItem(AUTH_KEY, token);
+                showApp();
+                loadGallery();
+            } else {
+                document.getElementById('login-error').textContent = 'Usuario o contraseña incorrectos';
+                document.getElementById('pass').value = '';
+            }
+        }
+
         async function loadGallery() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            if (!token) { showLogin(); return; }
+
             const content = document.getElementById('content');
             const count = document.getElementById('count');
             content.innerHTML = '<p class="loading">Cargando imágenes...</p>';
 
             try {
-                const res = await fetch('/api/gallery');
+                const res = await fetch('/api/gallery', {
+                    headers: { 'Authorization': 'Basic ' + token }
+                });
+
+                if (res.status === 401) {
+                    sessionStorage.removeItem(AUTH_KEY);
+                    showLogin('Tu sesión expiró, ingresa de nuevo');
+                    return;
+                }
+
                 const data = await res.json();
                 const images = data.images || [];
 
@@ -297,7 +424,13 @@
             if (e.key === 'Escape') closeLightbox();
         });
 
-        loadGallery();
+        // Al cargar: si ya hay sesión, mostrar galería; si no, pedir login
+        if (sessionStorage.getItem(AUTH_KEY)) {
+            showApp();
+            loadGallery();
+        } else {
+            showLogin();
+        }
     </script>
 </body>
 </html>
