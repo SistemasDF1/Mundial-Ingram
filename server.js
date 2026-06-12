@@ -67,30 +67,77 @@ function getLocalIP() {
   return 'localhost';
 }
 
-// Función para limpiar archivos antiguos (mantener solo 30)
-async function cleanOldFiles() {
+// --- Almacenamiento permanente en GitHub ---
+// Cada imagen generada se sube a una carpeta del repo vía la API de GitHub,
+// así sobreviven a los reinicios/deploys de Render (disco efímero).
+const GH_TOKEN = process.env.GITHUB_TOKEN;
+const GH_REPO = process.env.GITHUB_REPO || 'SistemasDF1/Mundial-Ingram';
+const GH_BRANCH = process.env.GITHUB_BRANCH || 'main';
+const GH_FOLDER = process.env.GITHUB_FOLDER || 'gallery';
+
+function ghHeaders() {
+  return {
+    'Authorization': `Bearer ${GH_TOKEN}`,
+    'Accept': 'application/vnd.github+json',
+    'User-Agent': 'Mundial-Ingram',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+
+// Sube una imagen (base64) a la carpeta del repo en GitHub
+async function uploadToGitHub(filename, base64Content) {
+  if (!GH_TOKEN) return null;
   try {
-    const downloadDir = path.join(__dirname, 'downloads');
-    if (!fs.existsSync(downloadDir)) return;
-    
-    const files = fs.readdirSync(downloadDir)
-      .filter(file => file.startsWith('figura_') && file.endsWith('.png'))
-      .map(file => ({
-        name: file,
-        path: path.join(downloadDir, file),
-        time: fs.statSync(path.join(downloadDir, file)).mtime
-      }))
-      .sort((a, b) => b.time - a.time);
-    
-    if (files.length > 30) {
-      const filesToDelete = files.slice(30);
-      filesToDelete.forEach(file => {
-        fs.unlinkSync(file.path);
-        console.log('Archivo eliminado:', file.name);
-      });
+    const url = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FOLDER}/${filename}`;
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `Agregar imagen generada ${filename}`,
+        content: base64Content,
+        branch: GH_BRANCH
+      })
+    });
+    if (!res.ok) {
+      console.error('Error subiendo a GitHub:', res.status, await res.text());
+      return null;
     }
+    const data = await res.json();
+    console.log('Imagen respaldada en GitHub:', filename);
+    return data.content?.download_url || null;
   } catch (error) {
-    console.error('Error limpiando archivos:', error);
+    console.error('Error subiendo a GitHub:', error.message);
+    return null;
+  }
+}
+
+// Lista las imágenes guardadas en la carpeta del repo en GitHub
+async function listGitHubImages() {
+  if (!GH_TOKEN) return null;
+  try {
+    const url = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FOLDER}?ref=${GH_BRANCH}`;
+    const res = await fetch(url, { headers: ghHeaders() });
+    if (res.status === 404) return []; // la carpeta aún no existe
+    if (!res.ok) {
+      console.error('Error listando GitHub:', res.status);
+      return null;
+    }
+    const data = await res.json();
+    return data
+      .filter(f => f.type === 'file' && f.name.endsWith('.png'))
+      .map(f => {
+        // El nombre es figura_<timestamp>.png; usamos el timestamp para ordenar
+        const match = f.name.match(/figura_(\d+)\.png/);
+        return {
+          name: f.name,
+          url: f.download_url,
+          time: match ? parseInt(match[1], 10) : 0
+        };
+      })
+      .sort((a, b) => b.time - a.time);
+  } catch (error) {
+    console.error('Error listando GitHub:', error.message);
+    return null;
   }
 }
 
@@ -232,10 +279,12 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
       }
       
       fs.writeFileSync(downloadPath, Buffer.from(processedImageBase64, 'base64'));
-      
-      // Limpiar archivos antiguos
-      await cleanOldFiles();
-      
+
+      // Respaldar permanentemente en GitHub (no bloquea la respuesta si falla)
+      uploadToGitHub(filename, processedImageBase64).catch(err =>
+        console.error('Fallo respaldo en GitHub:', err.message)
+      );
+
       // Generar URL de descarga con la IP local para que el QR funcione desde otros dispositivos
       const host = req.get('host') || '';
       const baseHost = host.includes('localhost') || host.includes('127.0.0.1')
@@ -281,8 +330,15 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
 });
 
 // Endpoint para listar las imágenes de la galería (más recientes primero)
-app.get('/api/gallery', (req, res) => {
+app.get('/api/gallery', async (req, res) => {
   try {
+    // Si GitHub está configurado, las imágenes permanentes viven ahí
+    const ghImages = await listGitHubImages();
+    if (ghImages !== null) {
+      return res.json({ images: ghImages, source: 'github' });
+    }
+
+    // Fallback: carpeta local (se borra en cada deploy de Render)
     const downloadDir = path.join(__dirname, 'downloads');
     if (!fs.existsSync(downloadDir)) {
       return res.json({ images: [] });
@@ -297,7 +353,7 @@ app.get('/api/gallery', (req, res) => {
       }))
       .sort((a, b) => b.time - a.time);
 
-    res.json({ images });
+    res.json({ images, source: 'local' });
   } catch (error) {
     console.error('Error al listar la galería:', error);
     res.status(500).json({ error: 'No se pudo cargar la galería', details: error.message });
