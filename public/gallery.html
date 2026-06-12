@@ -292,6 +292,7 @@
             <div class="actions">
                 <button class="btn secondary" onclick="loadGallery()">↻ Actualizar</button>
                 <a class="btn" href="/">＋ Generar nueva</a>
+                <button class="btn secondary" onclick="logout()">⎋ Cerrar sesión</button>
             </div>
         </div>
 
@@ -348,6 +349,13 @@
                 document.getElementById('login-error').textContent = 'Usuario o contraseña incorrectos';
                 document.getElementById('pass').value = '';
             }
+        }
+
+        function logout() {
+            sessionStorage.removeItem(AUTH_KEY);
+            document.getElementById('user').value = '';
+            document.getElementById('pass').value = '';
+            showLogin();
         }
 
         async function loadGallery() {
