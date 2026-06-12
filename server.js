@@ -280,6 +280,30 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
   }
 });
 
+// Endpoint para listar las imágenes de la galería (más recientes primero)
+app.get('/api/gallery', (req, res) => {
+  try {
+    const downloadDir = path.join(__dirname, 'downloads');
+    if (!fs.existsSync(downloadDir)) {
+      return res.json({ images: [] });
+    }
+
+    const images = fs.readdirSync(downloadDir)
+      .filter(file => file.startsWith('figura_') && file.endsWith('.png'))
+      .map(file => ({
+        name: file,
+        url: `/downloads/${file}`,
+        time: fs.statSync(path.join(downloadDir, file)).mtime.getTime()
+      }))
+      .sort((a, b) => b.time - a.time);
+
+    res.json({ images });
+  } catch (error) {
+    console.error('Error al listar la galería:', error);
+    res.status(500).json({ error: 'No se pudo cargar la galería', details: error.message });
+  }
+});
+
 // Endpoint de salud
 app.get('/api/health', (req, res) => {
   res.json({ 
