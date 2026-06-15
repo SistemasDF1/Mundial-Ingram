@@ -168,6 +168,11 @@ CAMISETA (prioridad máxima):
 - Viste a la persona con la camiseta EXACTA de la IMAGEN 2: mismos colores, patrón, franjas, cuello, mangas y escudo, sin inventar otro diseño.
 - No agregues logos de marcas deportivas ni patrocinadores que no aparezcan en la IMAGEN 2.
 
+INTEGRACIÓN (muy importante):
+- No pegues la foto original como un recorte plano sobre el fondo.
+- Vuelve a renderizar el cuerpo, pose e iluminación del jugador para que la persona forme parte natural de la escena de estadio: misma dirección de luz, sombras, tono de color y nivel de detalle que el resto de la carta.
+- El resultado debe verse como una sola fotografía cohesiva del jugador, no como un montaje de una cara recortada sobre una ilustración.
+
 DISEÑO DE LA CARTA:
 - Marco y estilo visual de la carta: ${estiloMarco}.
 - Esquina superior izquierda: número "99" y debajo, en letras pequeñas, la posición "DEL".
