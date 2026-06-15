@@ -84,6 +84,47 @@ function ghHeaders() {
   };
 }
 
+// Obtiene el sha de un archivo en la carpeta del repo en GitHub (necesario para borrarlo)
+async function getGitHubFileSha(filename) {
+  if (!GH_TOKEN) return null;
+  try {
+    const url = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FOLDER}/${filename}?ref=${GH_BRANCH}`;
+    const res = await fetch(url, { headers: ghHeaders() });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.sha || null;
+  } catch (error) {
+    console.error('Error obteniendo sha de GitHub:', error.message);
+    return null;
+  }
+}
+
+// Borra una imagen de la carpeta del repo en GitHub
+async function deleteFromGitHub(filename, sha) {
+  if (!GH_TOKEN) return false;
+  try {
+    const url = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FOLDER}/${filename}`;
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `Eliminar imagen ${filename}`,
+        sha,
+        branch: GH_BRANCH
+      })
+    });
+    if (!res.ok) {
+      console.error('Error borrando de GitHub:', res.status, await res.text());
+      return false;
+    }
+    console.log('Imagen borrada de GitHub:', filename);
+    return true;
+  } catch (error) {
+    console.error('Error borrando de GitHub:', error.message);
+    return false;
+  }
+}
+
 // Sube una imagen (base64) a la carpeta del repo en GitHub
 async function uploadToGitHub(filename, base64Content) {
   if (!GH_TOKEN) return null;
@@ -330,43 +371,48 @@ app.post('/api/generate', upload.single('image'), async (req, res) => {
 });
 
 // Credenciales para acceder a la galería
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'Mundial2026';
+// Cuenta principal: solo ver y descargar imágenes.
+// Cuenta secundaria: además puede borrar imágenes de la galería.
+const ADMIN_ACCOUNTS = [
+  { user: process.env.ADMIN_USER || 'admin', pass: process.env.ADMIN_PASS || 'Mundial2026', canDelete: false },
+  { user: process.env.ADMIN2_USER || 'moderador', pass: process.env.ADMIN2_PASS || 'Borrar2026!Mundial', canDelete: true }
+];
 
-// Valida el header Authorization: Basic <base64(user:pass)>
+// Valida el header Authorization: Basic <base64(user:pass)> y devuelve la cuenta autenticada (o null)
 function checkGalleryAuth(req) {
   const header = req.headers.authorization || '';
-  if (!header.startsWith('Basic ')) return false;
+  if (!header.startsWith('Basic ')) return null;
   let decoded;
   try {
     decoded = Buffer.from(header.slice(6), 'base64').toString('utf8');
   } catch {
-    return false;
+    return null;
   }
   const idx = decoded.indexOf(':');
-  if (idx === -1) return false;
+  if (idx === -1) return null;
   const user = decoded.slice(0, idx);
   const pass = decoded.slice(idx + 1);
-  return user === ADMIN_USER && pass === ADMIN_PASS;
+  return ADMIN_ACCOUNTS.find(acc => acc.user === user && acc.pass === pass) || null;
 }
 
 // Endpoint para listar las imágenes de la galería (más recientes primero)
 app.get('/api/gallery', async (req, res) => {
   // Requiere login (usuario y contraseña)
-  if (!checkGalleryAuth(req)) {
+  const auth = checkGalleryAuth(req);
+  if (!auth) {
     return res.status(401).json({ error: 'No autorizado' });
   }
   try {
     // Si GitHub está configurado, las imágenes permanentes viven ahí
     const ghImages = await listGitHubImages();
     if (ghImages !== null) {
-      return res.json({ images: ghImages, source: 'github' });
+      return res.json({ images: ghImages, source: 'github', canDelete: auth.canDelete });
     }
 
     // Fallback: carpeta local (se borra en cada deploy de Render)
     const downloadDir = path.join(__dirname, 'downloads');
     if (!fs.existsSync(downloadDir)) {
-      return res.json({ images: [] });
+      return res.json({ images: [], canDelete: auth.canDelete });
     }
 
     const images = fs.readdirSync(downloadDir)
@@ -378,10 +424,57 @@ app.get('/api/gallery', async (req, res) => {
       }))
       .sort((a, b) => b.time - a.time);
 
-    res.json({ images, source: 'local' });
+    res.json({ images, source: 'local', canDelete: auth.canDelete });
   } catch (error) {
     console.error('Error al listar la galería:', error);
     res.status(500).json({ error: 'No se pudo cargar la galería', details: error.message });
+  }
+});
+
+// Endpoint para borrar una imagen de la galería (requiere permiso de borrado)
+app.delete('/api/gallery/:filename', async (req, res) => {
+  const auth = checkGalleryAuth(req);
+  if (!auth) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
+  if (!auth.canDelete) {
+    return res.status(403).json({ error: 'No tienes permiso para borrar imágenes' });
+  }
+
+  const { filename } = req.params;
+  // Solo permitir borrar archivos con el formato esperado (evita path traversal)
+  if (!/^figura_\d+\.png$/.test(filename)) {
+    return res.status(400).json({ error: 'Nombre de archivo inválido' });
+  }
+
+  try {
+    let deletedSomewhere = false;
+
+    if (GH_TOKEN) {
+      const sha = await getGitHubFileSha(filename);
+      if (sha) {
+        const ok = await deleteFromGitHub(filename, sha);
+        if (!ok) {
+          return res.status(500).json({ error: 'No se pudo borrar la imagen de GitHub' });
+        }
+        deletedSomewhere = true;
+      }
+    }
+
+    const localPath = path.join(__dirname, 'downloads', filename);
+    if (fs.existsSync(localPath)) {
+      fs.unlinkSync(localPath);
+      deletedSomewhere = true;
+    }
+
+    if (!deletedSomewhere) {
+      return res.status(404).json({ error: 'Imagen no encontrada' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al borrar imagen:', error.message);
+    res.status(500).json({ error: 'Error al borrar la imagen', details: error.message });
   }
 });
 

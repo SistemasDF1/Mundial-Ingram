@@ -153,29 +153,29 @@ async function generateImage() {
     const nombreCamiseta = camiseta ? camiseta.name : 'la seleccionada';
     const estiloMarco = window.marcoSeleccionado || 'verde y dorado';
     
-    const prompt = `Usa la primera imagen (la foto de la persona) como base principal.
-Mantén mi identidad facial realista y reconocible.
+    const prompt = `Eres un editor de fotos experto. Recibes dos imágenes:
+- IMAGEN 1: fotografía real de una persona.
+- IMAGEN 2: camiseta de fútbol de referencia de ${nombreCamiseta}.
 
-La segunda imagen es la camiseta de fútbol de ${nombreCamiseta} que DEBES usar.
-Cambia la ropa de la persona por EXACTAMENTE esa camiseta de la segunda imagen:
-reproduce fielmente sus colores, diseño, franjas, escudo y todos sus detalles.
-NO inventes otra camiseta ni cambies su diseño.
-IMPORTANTE: no agregues logos de patrocinadores, marcas deportivas
-ni publicidad que no aparezcan en la camiseta de referencia.
+TAREA: genera una carta de jugador de fútbol estilo FIFA Ultimate Team, fotorrealista, diseño premium y profesional.
 
-Crea una carta de jugador de fútbol estilo FIFA Ultimate Team,
-diseño premium y profesional.
+ROSTRO (prioridad máxima):
+- Conserva EXACTAMENTE el mismo rostro de la persona de la IMAGEN 1: mismos rasgos faciales, tono de piel, cabello, barba/vello facial y expresión.
+- La persona debe ser fácilmente reconocible como la misma de la foto original. No generes otra cara ni mezcles rasgos de otra persona.
+- No cambies la edad ni el género de la persona.
 
-Agrega un marco tipo carta ${estiloMarco},
-valoración del jugador en la parte superior,
-nombre (${nombre}) y posición debajo.
+CAMISETA (prioridad máxima):
+- Viste a la persona con la camiseta EXACTA de la IMAGEN 2: mismos colores, patrón, franjas, cuello, mangas y escudo, sin inventar otro diseño.
+- No agregues logos de marcas deportivas ni patrocinadores que no aparezcan en la IMAGEN 2.
 
-Incluye la bandera de ${nombreCamiseta} en algún lugar visible de la carta.
+DISEÑO DE LA CARTA:
+- Marco y estilo visual de la carta: ${estiloMarco}.
+- Esquina superior izquierda: número "99" y debajo, en letras pequeñas, la posición "DEL".
+- Parte inferior de la carta, debajo del retrato del jugador: el nombre "${nombre}" en mayúsculas con tipografía deportiva.
+- Incluye la bandera de ${nombreCamiseta} en algún lugar visible de la carta.
+- Fondo de estadio de fútbol con iluminación cinematográfica, estilo póster deportivo realista.
 
-Fondo de estadio con iluminación cinematográfica,
-estilo póster deportivo realista,
-alta calidad, ultra detallado,
-no caricatura, no anime.`;
+CALIDAD: alta resolución, ultra detallado, fotorrealista. No caricatura, no anime, no dibujo.`;
 
     promptInput.value = prompt;
 

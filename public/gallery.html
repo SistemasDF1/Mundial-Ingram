@@ -120,6 +120,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .card .date {
@@ -140,6 +141,23 @@
 
         .download-link:hover {
             background: #194875;
+        }
+
+        .delete-link {
+            background: #fff;
+            color: #d33;
+            border: 1px solid #f1c0c0;
+            border-radius: 50px;
+            padding: 7px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .delete-link:hover {
+            background: #d33;
+            color: #fff;
         }
 
         .empty, .loading {
@@ -319,6 +337,7 @@
         }
 
         const AUTH_KEY = 'galleryAuth';
+        let canDelete = false;
 
         function showLogin(msg) {
             document.getElementById('login').style.display = 'flex';
@@ -379,6 +398,7 @@
 
                 const data = await res.json();
                 const images = data.images || [];
+                canDelete = !!data.canDelete;
 
                 if (images.length === 0) {
                     count.textContent = 'No hay imágenes todavía';
@@ -398,10 +418,17 @@
                         <img class="thumb" src="${img.url}" alt="${img.name}" loading="lazy">
                         <div class="meta">
                             <span class="date">${formatDate(img.time)}</span>
-                            <a class="download-link" href="${img.url}" download="${img.name}">⬇</a>
+                            <div style="display:flex; gap:8px;">
+                                <a class="download-link" href="${img.url}" download="${img.name}">⬇</a>
+                                ${canDelete ? `<button class="delete-link" type="button">🗑</button>` : ''}
+                            </div>
                         </div>
                     `;
                     card.querySelector('.thumb').addEventListener('click', () => openLightbox(img.url, img.name));
+                    const deleteBtn = card.querySelector('.delete-link');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', () => deleteImage(img.name, card));
+                    }
                     grid.appendChild(card);
                 });
 
@@ -410,6 +437,40 @@
             } catch (err) {
                 count.textContent = '';
                 content.innerHTML = '<p class="empty">Error al cargar la galería.</p>';
+                console.error(err);
+            }
+        }
+
+        async function deleteImage(name, card) {
+            if (!confirm('¿Borrar esta imagen de la galería? Esta acción no se puede deshacer.')) return;
+
+            const token = sessionStorage.getItem(AUTH_KEY);
+            if (!token) { showLogin(); return; }
+
+            try {
+                const res = await fetch('/api/gallery/' + encodeURIComponent(name), {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Basic ' + token }
+                });
+
+                if (res.status === 401) {
+                    sessionStorage.removeItem(AUTH_KEY);
+                    showLogin('Tu sesión expiró, ingresa de nuevo');
+                    return;
+                }
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || 'No se pudo borrar la imagen');
+                    return;
+                }
+
+                card.remove();
+                const count = document.getElementById('count');
+                const remaining = document.querySelectorAll('.card').length;
+                count.textContent = remaining + (remaining === 1 ? ' imagen generada' : ' imágenes generadas');
+            } catch (err) {
+                alert('No se pudo borrar la imagen');
                 console.error(err);
             }
         }
