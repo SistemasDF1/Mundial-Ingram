@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Factor - Galeria de Imagens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Everett:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Everett', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #194875;
+            min-height: 100vh;
+            padding: 32px 20px 60px;
+        }
+
+        .header {
+            max-width: 1200px;
+            margin: 0 auto 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #194875;
+        }
+
+        .header p {
+            color: #6b7a8d;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #e55319;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .btn:hover {
+            background: #194875;
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: #194875;
+            border: 1px solid #d6dde6;
+        }
+
+        .btn.secondary:hover {
+            background: #194875;
+            color: #fff;
+        }
+
+        .grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(25, 72, 117, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(25, 72, 117, 0.15);
+        }
+
+        .card .thumb {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            background: #eef1f5;
+            cursor: pointer;
+            display: block;
+        }
+
+        .card .meta {
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .card .date {
+            font-size: 0.8rem;
+            color: #6b7a8d;
+        }
+
+        .download-link {
+            background: #e55319;
+            color: #fff;
+            border-radius: 50px;
+            padding: 7px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .download-link:hover {
+            background: #194875;
+        }
+
+        .empty, .loading {
+            max-width: 1200px;
+            margin: 60px auto;
+            text-align: center;
+            color: #6b7a8d;
+            font-size: 1.1rem;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 25, 45, 0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            z-index: 1000;
+        }
+
+        .lightbox.open {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox .lb-actions {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+        }
+
+        .lightbox .close {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .lightbox .close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Login */
+        #login {
+            position: fixed;
+            inset: 0;
+            background: #194875;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 2000;
+        }
+        .login-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 36px 30px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-card h2 {
+            color: #194875;
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        .login-card p {
+            color: #6b7a8d;
+            font-size: 0.9rem;
+            margin-bottom: 22px;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 13px 16px;
+            margin-bottom: 14px;
+            border: 1px solid #d6dde6;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #194875;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .login-card input:focus {
+            border-color: #e55319;
+        }
+        .login-card button {
+            width: 100%;
+            background: #e55319;
+            color: #fff;
+            border: none;
+            padding: 13px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .login-card button:hover {
+            background: #194875;
+        }
+        .login-error {
+            color: #d33;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            min-height: 18px;
+        }
+        #app { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de login -->
+    <div id="login">
+        <form class="login-card" onsubmit="doLogin(event)">
+            <h2>Galeria de Imagens</h2>
+            <p>Digite suas credenciais para acessar</p>
+            <div class="login-error" id="login-error"></div>
+            <input type="text" id="user" placeholder="Usuário" autocomplete="username" required>
+            <input type="password" id="pass" placeholder="Senha" autocomplete="current-password" required>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+
+    <!-- Galería (oculta hasta iniciar sesión) -->
+    <div id="app">
+        <div class="header">
+            <div>
+                <h1>Galeria de Imagens</h1>
+                <p id="count">Carregando imagens...</p>
+            </div>
+            <div class="actions">
+                <button class="btn secondary" onclick="loadGallery()">↻ Atualizar</button>
+                <a class="btn" href="/pt/">＋ Gerar nova</a>
+                <button class="btn secondary" onclick="logout()">⎋ Sair</button>
+            </div>
+        </div>
+
+        <div id="content">
+            <p class="loading">Carregando imagens...</p>
+        </div>
+    </div>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <button class="close" onclick="closeLightbox()">✕</button>
+        <img id="lb-img" src="" alt="">
+        <div class="lb-actions">
+            <a class="download-link" id="lb-download" href="" download>⬇ Baixar</a>
+        </div>
+    </div>
+
+    <script>
+        function formatDate(ms) {
+            const d = new Date(ms);
+            return d.toLocaleString('pt-BR', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        const AUTH_KEY = 'galleryAuth';
+
+        function showLogin(msg) {
+            document.getElementById('login').style.display = 'flex';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('login-error').textContent = msg || '';
+        }
+
+        function showApp() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+        }
+
+        async function doLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('user').value.trim();
+            const pass = document.getElementById('pass').value;
+            const token = btoa(user + ':' + pass);
+
+            const res = await fetch('/api/gallery', {
+                headers: { 'Authorization': 'Basic ' + token }
+            });
+
+            if (res.ok) {
+                sessionStorage.setItem(AUTH_KEY, token);
+                showApp();
+                loadGallery();
+            } else {
+                document.getElementById('login-error').textContent = 'Usuário ou senha incorretos';
+                document.getElementById('pass').value = '';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem(AUTH_KEY);
+            document.getElementById('user').value = '';
+            document.getElementById('pass').value = '';
+            showLogin();
+        }
+
+        async function loadGallery() {
+            const token = sessionStorage.getItem(AUTH_KEY);
+            if (!token) { showLogin(); return; }
+
+            const content = document.getElementById('content');
+            const count = document.getElementById('count');
+            content.innerHTML = '<p class="loading">Carregando imagens...</p>';
+
+            try {
+                const res = await fetch('/api/gallery', {
+                    headers: { 'Authorization': 'Basic ' + token }
+                });
+
+                if (res.status === 401) {
+                    sessionStorage.removeItem(AUTH_KEY);
+                    showLogin('Sua sessão expirou, entre novamente');
+                    return;
+                }
+
+                const data = await res.json();
+                const images = data.images || [];
+
+                if (images.length === 0) {
+                    count.textContent = 'Ainda não há imagens';
+                    content.innerHTML = '<p class="empty">Nenhuma imagem foi gerada ainda.<br>Gere a primeira na página principal.</p>';
+                    return;
+                }
+
+                count.textContent = images.length + (images.length === 1 ? ' imagem gerada' : ' imagens geradas');
+
+                const grid = document.createElement('div');
+                grid.className = 'grid';
+
+                images.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <img class="thumb" src="${img.url}" alt="${img.name}" loading="lazy">
+                        <div class="meta">
+                            <span class="date">${formatDate(img.time)}</span>
+                            <a class="download-link" href="${img.url}" download="${img.name}">⬇</a>
+                        </div>
+                    `;
+                    card.querySelector('.thumb').addEventListener('click', () => openLightbox(img.url, img.name));
+                    grid.appendChild(card);
+                });
+
+                content.innerHTML = '';
+                content.appendChild(grid);
+            } catch (err) {
+                count.textContent = '';
+                content.innerHTML = '<p class="empty">Erro ao carregar a galeria.</p>';
+                console.error(err);
+            }
+        }
+
+        function openLightbox(url, name) {
+            const lb = document.getElementById('lightbox');
+            document.getElementById('lb-img').src = url;
+            const dl = document.getElementById('lb-download');
+            dl.href = url;
+            dl.setAttribute('download', name);
+            lb.classList.add('open');
+        }
+
+        function closeLightbox(event) {
+            if (event && event.target.closest('.lb-actions')) return;
+            document.getElementById('lightbox').classList.remove('open');
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Al cargar: si ya hay sesión, mostrar galería; si no, pedir login
+        if (sessionStorage.getItem(AUTH_KEY)) {
+            showApp();
+            loadGallery();
+        } else {
+            showLogin();
+        }
+    </script>
+</body>
+</html>
