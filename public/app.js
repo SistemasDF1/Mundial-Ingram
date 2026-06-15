@@ -160,9 +160,10 @@ async function generateImage() {
 TAREA: genera una carta de jugador de fútbol estilo FIFA Ultimate Team, fotorrealista, diseño premium y profesional.
 
 ROSTRO (prioridad máxima):
-- Conserva EXACTAMENTE el mismo rostro de la persona de la IMAGEN 1: mismos rasgos faciales, tono de piel, cabello, barba/vello facial y expresión.
+- Conserva EXACTAMENTE el mismo rostro de la persona de la IMAGEN 1: mismos rasgos faciales, tono de piel, cabello y expresión, SIN NINGÚN CAMBIO.
 - La persona debe ser fácilmente reconocible como la misma de la foto original. No generes otra cara ni mezcles rasgos de otra persona.
 - No cambies la edad ni el género de la persona.
+- No agregues barba, bigote, vello facial, lentes ni ningún accesorio que la persona no tenga en la IMAGEN 1. Si en la IMAGEN 1 está sin barba, el resultado debe estar sin barba.
 
 CAMISETA (prioridad máxima):
 - Viste a la persona con la camiseta EXACTA de la IMAGEN 2: mismos colores, patrón, franjas, cuello, mangas y escudo, sin inventar otro diseño.
