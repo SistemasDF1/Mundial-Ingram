@@ -16,7 +16,6 @@ const downloadBtn = document.getElementById('downloadBtn');
 const newBtn = document.getElementById('newBtn');
 const toast = document.getElementById('toast');
 const fileInput = document.getElementById('fileInput');
-const uploadBtn = document.getElementById('uploadBtn');
 const countdownEl = document.getElementById('countdown');
 
 let cameraStream = null;
@@ -25,7 +24,6 @@ let cameraStream = null;
 generateBtn.addEventListener('click', generateImage);
 downloadBtn.addEventListener('click', downloadImage);
 newBtn.addEventListener('click', resetForm);
-uploadBtn.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', handleFileUpload);
 cameraBtn.addEventListener('click', async () => {
     cameraModal.style.display = 'block';
