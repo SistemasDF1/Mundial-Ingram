@@ -178,6 +178,12 @@ INTEGRACIÓN (muy importante):
 - Reconstruye el cuerpo, hombros y la camiseta de forma coherente con la luz del estadio, pero la cabeza/cara permanece fiel a la IMAGEN 1.
 - El resultado debe verse como una sola fotografía cohesiva y profesional, no como un montaje de una cara recortada y pegada sobre una ilustración.
 
+ILUMINACIÓN Y ACABADO PROFESIONAL (estilo estampa/cromo de fútbol):
+- Aplica iluminación de estudio profesional sobre el jugador: luz principal suave desde un lado que modele el rostro, luz de relleno tenue y una luz de contorno (rim light) detrás que separe al jugador del fondo y resalte hombros y cabello.
+- Da un acabado de fotografía deportiva editorial: contraste rico, color grading cinematográfico, negros profundos y altas luces brillantes pero sin quemar la piel ni perder detalle en el rostro.
+- El jugador debe destacar con un sutil brillo/realce premium, como las estampas oficiales de jugadores: nítido, vibrante y bien definido, con el fondo del estadio ligeramente desenfocado para dar profundidad.
+- Mantén tonos de piel naturales y realistas pese al color grading; nada de piel naranja, gris ni saturada en exceso.
+
 DISEÑO DE LA CARTA:
 - Marco y estilo visual de la carta: ${estiloMarco}.
 - Esquina superior izquierda: número "99" y debajo, en letras pequeñas, la posición "DEL".
