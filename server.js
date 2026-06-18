@@ -204,7 +204,7 @@ async function processImage(base64Image) {
     const baseImage = await sharp(imageBuffer)
       .resize(finalWidth, finalHeight - bandHeight, {
         fit: 'cover',
-        position: 'center'
+        position: 'top'
       })
       .extend({
         bottom: bandHeight,

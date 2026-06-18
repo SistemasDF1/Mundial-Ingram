@@ -170,7 +170,9 @@ CAMISETA (prioridad máxima):
 - No agregues logos de marcas deportivas ni patrocinadores que no aparezcan en la IMAGEN 2.
 
 ENCUADRE Y POSE:
+- Composición VERTICAL en formato de carta (más alta que ancha, proporción tipo retrato 2:3). El jugador debe estar centrado y completo dentro del marco.
 - Retrato de medio cuerpo (de la cabeza a la mitad del pecho aprox.), persona centrada y mirando al frente, como en una carta FIFA.
+- Deja un margen de aire por encima de la cabeza y a los lados; la cabeza NO debe quedar pegada al borde superior ni cortada. Toda la cabeza y el cabello deben verse completos dentro de la carta.
 - Cabeza con proporción natural respecto al torso. La cara debe ocupar un tamaño cómodo, ni gigante ni diminuta, sin recortes raros del cuello o la frente.
 
 INTEGRACIÓN (muy importante):
