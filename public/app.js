@@ -151,26 +151,32 @@ async function generateImage() {
     const nombreCamiseta = camiseta ? camiseta.name : 'la seleccionada';
     const estiloMarco = window.marcoSeleccionado || 'verde y dorado';
     
-    const prompt = `Eres un editor de fotos experto. Recibes dos imágenes:
-- IMAGEN 1: fotografía real de una persona.
+    const prompt = `Eres un retocador fotográfico profesional especializado en composición fotorrealista. Recibes dos imágenes:
+- IMAGEN 1: fotografía real de una persona (la cara que SÍ o SÍ debes conservar).
 - IMAGEN 2: camiseta de fútbol de referencia de ${nombreCamiseta}.
 
-TAREA: genera una carta de jugador de fútbol estilo FIFA Ultimate Team, fotorrealista, diseño premium y profesional.
+TAREA: crea una carta de jugador de fútbol estilo FIFA Ultimate Team, fotorrealista, diseño premium y profesional, usando la cara real de la IMAGEN 1.
 
-ROSTRO (prioridad máxima):
-- Conserva EXACTAMENTE el mismo rostro de la persona de la IMAGEN 1: mismos rasgos faciales, tono de piel, cabello y expresión, SIN NINGÚN CAMBIO.
-- La persona debe ser fácilmente reconocible como la misma de la foto original. No generes otra cara ni mezcles rasgos de otra persona.
-- No cambies la edad ni el género de la persona.
-- No agregues barba, bigote, vello facial, lentes ni ningún accesorio que la persona no tenga en la IMAGEN 1. Si en la IMAGEN 1 está sin barba, el resultado debe estar sin barba.
+ROSTRO (PRIORIDAD ABSOLUTA — esto es lo más importante de todo):
+- Trata la cara de la IMAGEN 1 como un activo intocable: NO la regeneres, NO la repintes, NO la estilices. Reutilízala tal cual, preservando píxel a píxel los rasgos.
+- Conserva EXACTAMENTE: forma y proporciones del rostro (ancho, largo, óvalo), distancia entre los ojos, forma de nariz, boca, mandíbula, cejas, orejas, tono de piel, color y línea del cabello, y la expresión original.
+- NO estires, NO comprimas, NO ensanches ni adelgaces la cara. Mantén las proporciones faciales y la simetría idénticas a la IMAGEN 1. Cualquier deformación de la cara es un ERROR.
+- La persona debe ser inmediatamente reconocible como la misma de la foto. No mezcles rasgos de otra persona, no la hagas más joven, mayor, ni cambies su género.
+- No agregues barba, bigote, vello facial, lentes, maquillaje ni accesorios que no estén en la IMAGEN 1. Si está sin barba, el resultado va sin barba.
+- Mantén textura de piel realista (poros, detalle natural). Evita el aspecto plástico, liso o de cera, y evita el suavizado excesivo.
 
 CAMISETA (prioridad máxima):
 - Viste a la persona con la camiseta EXACTA de la IMAGEN 2: mismos colores, patrón, franjas, cuello, mangas y escudo, sin inventar otro diseño.
 - No agregues logos de marcas deportivas ni patrocinadores que no aparezcan en la IMAGEN 2.
 
+ENCUADRE Y POSE:
+- Retrato de medio cuerpo (de la cabeza a la mitad del pecho aprox.), persona centrada y mirando al frente, como en una carta FIFA.
+- Cabeza con proporción natural respecto al torso. La cara debe ocupar un tamaño cómodo, ni gigante ni diminuta, sin recortes raros del cuello o la frente.
+
 INTEGRACIÓN (muy importante):
-- No pegues la foto original como un recorte plano sobre el fondo.
-- Vuelve a renderizar el cuerpo, pose e iluminación del jugador para que la persona forme parte natural de la escena de estadio: misma dirección de luz, sombras, tono de color y nivel de detalle que el resto de la carta.
-- El resultado debe verse como una sola fotografía cohesiva del jugador, no como un montaje de una cara recortada sobre una ilustración.
+- Ajusta SOLO la iluminación, las sombras y el balance de color de la cara para que combine con la escena, SIN alterar la geometría ni los rasgos del rostro.
+- Reconstruye el cuerpo, hombros y la camiseta de forma coherente con la luz del estadio, pero la cabeza/cara permanece fiel a la IMAGEN 1.
+- El resultado debe verse como una sola fotografía cohesiva y profesional, no como un montaje de una cara recortada y pegada sobre una ilustración.
 
 DISEÑO DE LA CARTA:
 - Marco y estilo visual de la carta: ${estiloMarco}.
@@ -179,7 +185,7 @@ DISEÑO DE LA CARTA:
 - Incluye la bandera de ${nombreCamiseta} en algún lugar visible de la carta.
 - Fondo de estadio de fútbol con iluminación cinematográfica, estilo póster deportivo realista.
 
-CALIDAD: alta resolución, ultra detallado, fotorrealista. No caricatura, no anime, no dibujo.`;
+CALIDAD: máxima resolución, ultra detallado, nitidez fotográfica, fotorrealista. No caricatura, no anime, no dibujo, no render 3D, no rostro deformado.`;
 
     promptInput.value = prompt;
 
